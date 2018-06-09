@@ -1,5 +1,3 @@
-#from os import listdir
-#import os.path
 from myfiles import *
 
 '''
@@ -20,10 +18,10 @@ def printTree(folder, folderLevel):
 		
 #=======================================================================================================================
 
-inputPath = '../../photosorterTEST'
+inputPath = 'F:/2012'
 outputPath = ''
 
 print('running...')
 myPhotos = MyFiles(inputPath, outputPath)
-myPhotos.sortFiles()
+myPhotos.renameDirs()
 
