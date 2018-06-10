@@ -18,7 +18,7 @@ class MyFiles:
 	
 #=== Methodes ==========================================================================================================
 	
-	# methode renames all directories in inputPath directory (no other subdirectories are renamed)
+	# methode renameDirs renames all directories in inputPath directory (no other subdirectories are renamed)
 	# initial name hase to be in format: day.month.year
 	# new name will be: year-mont-day
 	def renameDirs(self):
@@ -51,7 +51,7 @@ class MyFiles:
 						# print new name
 						print(" - new name: " + newName)
 						
-					# if dmy doesn't have 3 part, don't change the name
+					# if dmy doesn't have 3 parts, don't change the name
 					else:
 						print(" - not changed")
 						
