@@ -6,7 +6,7 @@
 #=======================================================================================================================
 
 import os
-import os.path
+import time
 
 class MyFiles:
 
@@ -30,10 +30,13 @@ class MyFiles:
 		
 		# if directory is not empty
 		if content:
+		
 			# for each element in directory
 			for piece in content:
+			
 				# if element is directory
 				if os.path.isdir(self.inputPath + '/' + piece):
+				
 					# print its current name
 					print(piece, end = '')
 					
@@ -42,6 +45,7 @@ class MyFiles:
 					
 					# if dmy has 3 parts
 					if len(dmy) == 3:
+					
 						# create new name in form y-m-d
 						newName = dmy[2] + '-' + dmy[1] + '-' + dmy[0]
 						
@@ -62,6 +66,7 @@ class MyFiles:
 	
 	# methode sortFiles sorts files (copy) from inputPath into outputPath
 	def sortFiles(self, dirLevel = 0):
+	
 		# print name of current directory with some space in fron to mark its level (dirLevel)
 		print(dirLevel * "     " + os.path.basename(self.inputPath))
 	
@@ -74,16 +79,17 @@ class MyFiles:
 			
 			# for each element in directory 
 			for piece in content:
+			
 				# create new MyFiles object
 				piecePath = MyFiles(self.inputPath + '/' + piece, self.outputPath)
 			
-				# if piecePath is directory
+				# if piecePath is directory, recursion of sorting methode sortFiles
 				if os.path.isdir(piecePath.inputPath):
-					# recursion of sorting methode sortFiles
 					piecePath.sortFiles(dirLevel)
 				
 				# if piecPath is file
 				elif os.path.isfile(piecePath.inputPath):
+				
 					# print file name with extension
 					print(dirLevel * "     " + os.path.split(piece)[1])
 					
@@ -93,17 +99,22 @@ class MyFiles:
 					# if file is JPEG (if you want to change/add a type of sorted files,  
 					# replace/add string defining the extension - eg. change '.jpe' to '.png')
 					if ( fileExt == '.jpg' or fileExt == '.jpeg' or fileExt == '.jpe'):
-						# what to do?
-						print('---> JPEG!!!')
-				
+					
+						# getting modification time of the file, in form yyyy-mm-dd
+						modificationTime = os.path.getmtime(piecePath.inputPath)
+						modificationTime = time.strftime('%Y-%m-%d', time.localtime(modificationTime))
+						
+						# checking if output directory exists and creating it, if not
+						outputDir = piecePath.outputPath + '/' + modificationTime
+						if not os.path.exists(outputDir):
+							os.makedirs(outputDir)
+						
 					# if file is not JPEG (or other defined before)
-					else:
-						# what to do?
+					else:																								# what to do?
 						print(os.path.splitext(piecePath.inputPath)[1])
 				
 				# if piecPath is neither directory nor file
-				else:
-				# what to do?
+				else:																									# what to do?
 					print(folderLevel * "     " + split(piece)[1])
 		
 		# if current directory is empty - return

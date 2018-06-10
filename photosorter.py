@@ -26,10 +26,10 @@ def printTree(folder, folderLevel):
 		
 #=======================================================================================================================
 
-inputPath = 'F:/2012'
-outputPath = ''
+inputPath = 'F:/photosorterTEST'
+outputPath = 'sorted'
 
 print('running...')
 myPhotos = MyFiles(inputPath, outputPath)
-myPhotos.renameDirs()
+myPhotos.sortFiles()
 
