@@ -2,11 +2,12 @@
 #=== class MyFiles - stors paths to input and output directories with files you want to sort============================
 #=======================================================================================================================
 #=== Albert Ratajczak ==================================================================================================
-#=== Last update: 2018-06-09 ===========================================================================================
+#=== Last update: 2018-06-11 ===========================================================================================
 #=======================================================================================================================
 
 import os
 import time
+import shutil
 
 class MyFiles:
 
@@ -22,6 +23,7 @@ class MyFiles:
 	# initial name hase to be in format: day.month.year
 	# new name will be: year-mont-day
 	def renameDirs(self):
+	
 		# print name of current directory
 		print('Current directory: ' + os.path.basename(self.inputPath))
 		
@@ -34,34 +36,24 @@ class MyFiles:
 			# for each element in directory
 			for piece in content:
 			
-				# if element is directory
+				# if element is directory, print its current name and split it (dmy - from: day.month.year)
 				if os.path.isdir(self.inputPath + '/' + piece):
-				
-					# print its current name
-					print(piece, end = '')
-					
-					# split the name where are dots (dmy - from: day.month.year)
+					print(piece, end = "")
 					dmy = piece.split('.')
 					
-					# if dmy has 3 parts
-					if len(dmy) == 3:
-					
-						# create new name in form y-m-d
-						newName = dmy[2] + '-' + dmy[1] + '-' + dmy[0]
-						
-						# rename directory
-						os.rename(self.inputPath + '/' + piece, self.inputPath + '/' + newName)
-						
-						# print new name
-						print(" - new name: " + newName)
-						
+					# if dmy has 3 parts, create new name in form y-m-d and rename the directory
 					# if dmy doesn't have 3 parts, don't change the name
+					if len(dmy) == 3:
+						newName = dmy[2] + '-' + dmy[1] + '-' + dmy[0]
+						os.rename(self.inputPath + '/' + piece, self.inputPath + '/' + newName)
+						print(" - new name: " + newName)
 					else:
 						print(" - not changed")
 						
 		# if directory is empty
 		else:
 			print('The directory is empty.')
+	
 	
 	
 	# methode sortFiles sorts files (copy) from inputPath into outputPath
@@ -77,45 +69,37 @@ class MyFiles:
 		if content:
 			dirLevel += 1
 			
-			# for each element in directory 
+			# for each element in directory, create new MyFiles object
 			for piece in content:
-			
-				# create new MyFiles object
 				piecePath = MyFiles(self.inputPath + '/' + piece, self.outputPath)
 			
 				# if piecePath is directory, recursion of sorting methode sortFiles
 				if os.path.isdir(piecePath.inputPath):
 					piecePath.sortFiles(dirLevel)
 				
-				# if piecPath is file
-				elif os.path.isfile(piecePath.inputPath):
-				
-					# print file name with extension
-					print(dirLevel * "     " + os.path.split(piece)[1])
-					
-					# extension of the file
+				# if piecPath is file, get it extension and check if it is JPEG
+				else: #os.path.isfile(piecePath.inputPath):
 					fileExt = os.path.splitext(piecePath.inputPath)[1].lower()
 					
-					# if file is JPEG (if you want to change/add a type of sorted files,  
-					# replace/add string defining the extension - eg. change '.jpe' to '.png')
+					# if file is JPEG, set outpud directory name as file date of modification
+					# if file is not JPEG - output directory "other"
 					if ( fileExt == '.jpg' or fileExt == '.jpeg' or fileExt == '.jpe'):
-					
-						# getting modification time of the file, in form yyyy-mm-dd
 						modificationTime = os.path.getmtime(piecePath.inputPath)
 						modificationTime = time.strftime('%Y-%m-%d', time.localtime(modificationTime))
-						
-						# checking if output directory exists and creating it, if not
 						outputDir = piecePath.outputPath + '/' + modificationTime
-						if not os.path.exists(outputDir):
-							os.makedirs(outputDir)
-						
-					# if file is not JPEG (or other defined before)
-					else:																								# what to do?
-						print(os.path.splitext(piecePath.inputPath)[1])
+					else:
+						outputDir = piecePath.outputPath + '/other' 
 				
-				# if piecPath is neither directory nor file
-				else:																									# what to do?
-					print(folderLevel * "     " + split(piece)[1])
+					# print file name with extension and mark dirLevel with space
+					print(dirLevel * "     " + os.path.split(piece)[1], end = "")
+					
+					# check if output directory exists and, if not, create it
+					if not os.path.exists(outputDir):
+						os.makedirs(outputDir)
+				
+					# copy the file to new directory
+					shutil.copy2(piecePath.inputPath, outputDir)
+					print(" --> copied to: " + outputDir)
 		
 		# if current directory is empty - return
 		else:
