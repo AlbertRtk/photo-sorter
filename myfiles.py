@@ -14,11 +14,74 @@ class MyFiles:
 	def __init__(self, inputPath, outputPath):
 		self.inputPath = inputPath
 		self.outputPath = outputPath
-		#self.nFiles = 0
 	
 	
 #=== Methodes ==========================================================================================================
 	
+	# empty methode
+	def emptyFunc(self):
+		return
+	
+	
+	# methode dirsTree lists the tree of directories in inputPath
+	# if fullTree is True, files will be listed too
+	# if you want to do any operations on files, set fullTree = True and give function func
+	def dirsTree(self, dirLevel = 0, fullTree = False, func = emptyFunc):
+		
+		# print name of current directory with some space in fron to mark its level (dirLevel)
+		print(dirLevel * "\t" + os.path.basename(self.inputPath))
+	
+		# table with content of current directory
+		content = os.listdir(self.inputPath)
+	
+		# if directory is not empty
+		if content:
+			dirLevel += 1
+			
+			# for each element in directory, create new MyFiles object
+			for piece in content:
+				piecePath = MyFiles(self.inputPath + '/' + piece, self.outputPath)
+				
+				# if piecePath is directory, recursion of sorting methode sortFiles
+				if os.path.isdir(piecePath.inputPath):
+					piecePath.dirsTree(dirLevel, fullTree, func)
+				
+				# if piecePath is not directory, but fullTree = True
+				elif fullTree:
+					print(folderLevel * "\t" + os.path.split(piece)[1])
+					piecePath.func()
+				else:
+					continue
+		
+		# if directory is empty
+		else:
+			return
+	
+	
+	# methode sortFile sorts (copies) file from inputPath into directory named by date in outputPath
+	def sortFile(self):
+		fileExt = os.path.splitext(self.inputPath)[1].lower()
+		sortExt = ['.jpg', '.jpeg', '.jpe']
+					
+		# if file is JPEG, set outpud directory name as file date of modification
+		# if file is not JPEG - output directory "other"
+		if any([fileExt = e for e in sortExt]):
+			modificationTime = os.path.getmtime(self.inputPath)
+			modificationTime = time.strftime('%Y-%m-%d', time.localtime(modificationTime))
+			outputDir = self.outputPath + '/' + modificationTime
+		else:
+			outputDir = self.outputPath + '/other' 
+		
+		# check if output directory exists and, if not, create it
+		if not os.path.exists(outputDir):
+			os.makedirs(outputDir)
+		
+		# copy the file to new directory
+		shutil.copy2(self.inputPath, outputDir)
+		print("{:>}".format("--> copied to: " + outputDir))
+	
+	
+#-----------------------------------------------------------------------------------------------------------------------	
 	# methode renameDirs renames all directories in inputPath directory (no other subdirectories are renamed)
 	# initial name hase to be in format: day.month.year
 	# new name will be: year-mont-day
@@ -60,7 +123,7 @@ class MyFiles:
 	def sortFiles(self, dirLevel = 0):
 	
 		# print name of current directory with some space in fron to mark its level (dirLevel)
-		print(dirLevel * "     " + os.path.basename(self.inputPath))
+		print(dirLevel * "\t" + os.path.basename(self.inputPath))
 	
 		# table with content of current directory
 		content = os.listdir(self.inputPath)
@@ -91,7 +154,7 @@ class MyFiles:
 						outputDir = piecePath.outputPath + '/other' 
 				
 					# print file name with extension and mark dirLevel with space
-					print(dirLevel * "     " + os.path.split(piece)[1], end = "")
+					print(dirLevel * "\t" + os.path.split(piece)[1], end = "")
 					
 					# check if output directory exists and, if not, create it
 					if not os.path.exists(outputDir):
