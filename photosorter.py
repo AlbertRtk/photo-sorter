@@ -30,6 +30,10 @@ inputPath = 'F:/photosorterTEST'
 outputPath = 'sorted'
 
 print('running...')
+
 myPhotos = MyFiles(inputPath, outputPath)
-myPhotos.sortFiles()
+
+myPhotos.dirsTree(fullTree = True)#, func = MyFiles.sortFile)
+
+#myPhotos.sortFiles()
 

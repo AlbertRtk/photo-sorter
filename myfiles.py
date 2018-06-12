@@ -23,6 +23,7 @@ class MyFiles:
 		return
 	
 	
+	
 	# methode dirsTree lists the tree of directories in inputPath
 	# if fullTree is True, files will be listed too
 	# if you want to do any operations on files, set fullTree = True and give function func
@@ -48,8 +49,8 @@ class MyFiles:
 				
 				# if piecePath is not directory, but fullTree = True
 				elif fullTree:
-					print(folderLevel * "\t" + os.path.split(piece)[1])
-					piecePath.func()
+					print(dirLevel * "\t" + os.path.split(piece)[1])
+					func(piecePath)
 				else:
 					continue
 		
@@ -58,14 +59,15 @@ class MyFiles:
 			return
 	
 	
-	# methode sortFile sorts (copies) file from inputPath into directory named by date in outputPath
+	
+	# methode sortFile sorts (copies) file from inputPath to directory named by its modification date in outputPath
 	def sortFile(self):
 		fileExt = os.path.splitext(self.inputPath)[1].lower()
 		sortExt = ['.jpg', '.jpeg', '.jpe']
 					
 		# if file is JPEG, set outpud directory name as file date of modification
 		# if file is not JPEG - output directory "other"
-		if any([fileExt = e for e in sortExt]):
+		if any([fileExt == e for e in sortExt]):
 			modificationTime = os.path.getmtime(self.inputPath)
 			modificationTime = time.strftime('%Y-%m-%d', time.localtime(modificationTime))
 			outputDir = self.outputPath + '/' + modificationTime
@@ -78,10 +80,10 @@ class MyFiles:
 		
 		# copy the file to new directory
 		shutil.copy2(self.inputPath, outputDir)
-		print("{:>}".format("--> copied to: " + outputDir))
+		print("{:>96}".format("copied to: " + outputDir))
 	
+
 	
-#-----------------------------------------------------------------------------------------------------------------------	
 	# methode renameDirs renames all directories in inputPath directory (no other subdirectories are renamed)
 	# initial name hase to be in format: day.month.year
 	# new name will be: year-mont-day
@@ -118,7 +120,7 @@ class MyFiles:
 			print('The directory is empty.')
 	
 	
-	
+	'''
 	# methode sortFiles sorts files (copy) from inputPath into outputPath
 	def sortFiles(self, dirLevel = 0):
 	
@@ -167,3 +169,4 @@ class MyFiles:
 		# if current directory is empty - return
 		else:
 			return
+	'''
