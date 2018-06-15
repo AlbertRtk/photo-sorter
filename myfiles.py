@@ -2,7 +2,7 @@
 #=== class MyFiles - stors paths to input and output directories with files you want to sort============================
 #=======================================================================================================================
 #=== Albert Ratajczak ==================================================================================================
-#=== Last update: 2018-06-14 ===========================================================================================
+#=== Last update: 2018-06-15 ===========================================================================================
 #=======================================================================================================================
 
 import os
@@ -11,10 +11,13 @@ import shutil
 
 class MyFiles:
 
+	# nFiles - counting total number of sorted files
+	# nDuplicats - counting number of duplicats
 	nFiles = int()
 	nDuplicats = int()
 	
 	def __init__(self, inputPath, outputPath):
+		assert (os.path.exists(inputPath)), "Input directory does NOT exist!"
 		self.inputPath = inputPath
 		self.outputPath = outputPath
 	
@@ -66,7 +69,7 @@ class MyFiles:
 	# methode sortFile sorts (copies) file from inputPath to directory named by its modification date in outputPath
 	def sortFile(self):
 	
-		# get the file extension in lowercase
+		# get the file extension in lowercase amd file name
 		fileExt = os.path.splitext(self.inputPath)[1].lower()
 		fileName = os.path.basename(self.inputPath)
 		
@@ -80,10 +83,11 @@ class MyFiles:
 		else:
 			outputDir = 'other' 
 		
-		# path to outputDir
+		# path to outputDir and full path - dstName - copy destination file
 		outputDirPath = os.path.join(self.outputPath, outputDir)
 		dstName = os.path.join(outputDirPath, fileName)
 
+		# checking for duplicats, if file already exists in destination directory, change outputDir and the name of file
 		if os.path.exists(dstName):
 			MyFiles.nDuplicats += 1
 			outputDir = 'duplicats'
@@ -95,7 +99,7 @@ class MyFiles:
 		if not os.path.exists(outputDirPath):
 			os.makedirs(outputDirPath)
 		
-		# copy the file to new directory
+		# copy the file to new destination
 		shutil.copy2(self.inputPath, dstName)
 		MyFiles.nFiles += 1
 		print("{:>96}".format("copied to: " + outputDir))
@@ -104,8 +108,10 @@ class MyFiles:
 	
 	# methode sortFiles sorts files (copy) from inputPath and all sub-directories into outputPath
 	def sortFiles(self):
+		print("\n{:=^96}".format(' Sorting your files '))
 		self.dirsTree(fullTree = True, func = MyFiles.sortFile)
-		print("{} files sorted in total, incuding {} duplicat(s)".format(MyFiles.nFiles, MyFiles.nDuplicats))
+		print(96 * "=")
+		print("\n{} files sorted in total, incuding {} duplicat(s)\n".format(MyFiles.nFiles, MyFiles.nDuplicats))
 		MyFiles.nFile = 0
 		MyFiles.nDuplicats = 0
 	
