@@ -1,20 +1,29 @@
 #=======================================================================================================================
-#=== class MyFiles - stors paths to input and output directories with files you want to sort============================
+#=== class MyFiles - stors paths to input and output directories with files you want to sort ===========================
 #=======================================================================================================================
 #=== Albert Ratajczak ==================================================================================================
-#=== Last update: 2018-06-15 ===========================================================================================
+#=== Last update: 2018-06-16 ===========================================================================================
 #=======================================================================================================================
 
 import os
 import time
 import shutil
 
+from functions import *
+
+
+
 class MyFiles:
 
 	# nFiles - counting total number of sorted files
 	# nDuplicats - counting number of duplicats
+	#nNamesake - counting files with the same name but different modification time
 	nFiles = int()
 	nDuplicats = int()
+	nNamesake = int()
+	
+	# list of sorted extensions
+	sortExt = set()
 	
 	def __init__(self, inputPath, outputPath):
 		assert (os.path.exists(inputPath)), "Input directory does NOT exist!"
@@ -27,7 +36,17 @@ class MyFiles:
 	# empty methode
 	def emptyFunc(self):
 		return
-	
+		
+#-----------------------------------------------------------------------------------------------------------------------
+
+	# methode adds extension to list of sorted extensions
+	def addExt(self, ext):
+		assert (isinstance(ext, set)), "Extensions should be given in set instance."
+		assert all([isinstance(e, str) for e in ext]), "Extension should be string variable."
+		assert all([e.startswith('.') for e in ext]), "Wrong extension. Extension should start with dot, ex.: .JPG"
+		for e in ext:
+			MyFiles.sortExt.add(e.lower())
+		
 #-----------------------------------------------------------------------------------------------------------------------	
 	
 	# methode dirsTree lists the tree of directories in inputPath
@@ -36,7 +55,7 @@ class MyFiles:
 	def dirsTree(self, dirLevel = 0, fullTree = False, func = emptyFunc):
 		
 		# print name of current directory with some space in fron to mark its level (dirLevel)
-		print(dirLevel * "\t" + os.path.basename(self.inputPath))
+		printLeveled(os.path.basename(self.inputPath), dirLevel)
 	
 		# table with content of current directory
 		content = os.listdir(self.inputPath)
@@ -55,7 +74,7 @@ class MyFiles:
 				
 				# if piecePath is not directory, but fullTree = True
 				elif fullTree:
-					print(dirLevel * "\t" + os.path.split(piece)[1])
+					printLeveled(os.path.split(piece)[1], dirLevel)
 					func(piecePath)
 				else:
 					continue
@@ -63,8 +82,9 @@ class MyFiles:
 		# if directory is empty
 		else:
 			return
-	
+
 #-----------------------------------------------------------------------------------------------------------------------
+
 	
 	# methode sortFile sorts (copies) file from inputPath to directory named by its modification date in outputPath
 	def sortFile(self):
@@ -72,14 +92,12 @@ class MyFiles:
 		# get the file extension in lowercase amd file name
 		fileExt = os.path.splitext(self.inputPath)[1].lower()
 		fileName = os.path.basename(self.inputPath)
-		
-		sortExt = ['.jpg', '.jpeg', '.jpe']
+		modificationTime = os.path.getmtime(self.inputPath)
 					
-		# if file is JPEG, set outpud directory name as file date of modification
+		# if file is JPEG, set output directory name as file date of modification (year-month)
 		# if file is not JPEG - output directory "other"
-		if any([fileExt == e for e in sortExt]):
-			modificationTime = os.path.getmtime(self.inputPath)
-			outputDir = time.strftime('%Y-%m-%d', time.localtime(modificationTime))	
+		if any([fileExt == e for e in MyFiles.sortExt]):
+			outputDir = time.strftime('%Y-%m', time.localtime(modificationTime))	
 		else:
 			outputDir = 'other' 
 		
@@ -87,12 +105,23 @@ class MyFiles:
 		outputDirPath = os.path.join(self.outputPath, outputDir)
 		dstName = os.path.join(outputDirPath, fileName)
 
-		# checking for duplicats, if file already exists in destination directory, change outputDir and the name of file
+		# checking for duplicats:
+		# if file already exists in destination directory, compare modification times
+		# if modification times are the same, change outputDir to 'duplicats' and the name of file
+		# if modification times differ - namesake, change only the name of file 
 		if os.path.exists(dstName):
-			MyFiles.nDuplicats += 1
-			outputDir = 'duplicats'
-			outputDirPath = os.path.join(self.outputPath, outputDir)
-			fileName = '{:03}'.format(MyFiles.nDuplicats) + '_' + fileName
+			duplicatModTime = os.path.getmtime(dstName)
+			
+			if duplicatModTime == modificationTime:
+				MyFiles.nDuplicats += 1
+				outputDir = 'duplicats'
+				outputDirPath = os.path.join(self.outputPath, outputDir)
+				fileName =  renameDuplicat(fileName, MyFiles.nDuplicats)
+				
+			else:
+				MyFiles.nNamesake += 1
+				fileName = renameDuplicat(fileName, MyFiles.nNamesake)
+				
 			dstName = os.path.join(outputDirPath, fileName)
 			
 		# check if output directory exists and, if not, create it
@@ -102,7 +131,7 @@ class MyFiles:
 		# copy the file to new destination
 		shutil.copy2(self.inputPath, dstName)
 		MyFiles.nFiles += 1
-		print("{:>96}".format("copied to: " + outputDir))
+		printR("copied to: " + outputDir)
 	
 #-----------------------------------------------------------------------------------------------------------------------	
 	
@@ -111,9 +140,11 @@ class MyFiles:
 		print("\n{:=^96}".format(' Sorting your files '))
 		self.dirsTree(fullTree = True, func = MyFiles.sortFile)
 		print(96 * "=")
-		print("\n{} files sorted in total, incuding {} duplicat(s)\n".format(MyFiles.nFiles, MyFiles.nDuplicats))
+		print("\nProgram finished: {} files sorted in total, incuding {} namesake(s) and {} duplicat(s)\n"
+			.format(MyFiles.nFiles, MyFiles.nNamesake, MyFiles.nDuplicats))
 		MyFiles.nFile = 0
 		MyFiles.nDuplicats = 0
+		MyFiles.nNamesake = 0
 	
 #-----------------------------------------------------------------------------------------------------------------------
 	
@@ -133,9 +164,10 @@ class MyFiles:
 		
 			# for each element in directory
 			for piece in content:
-			
+				oldNamePath = os.path.join(self.inputPath, piece)
+				
 				# if element is directory, print its current name and split it (dmy - from: day.month.year)
-				if os.path.isdir(self.inputPath + '/' + piece):
+				if os.path.isdir(oldNamePath):
 					print(piece, end = "")
 					dmy = piece.split('.')
 					
@@ -143,7 +175,8 @@ class MyFiles:
 					# if dmy doesn't have 3 parts, don't change the name
 					if len(dmy) == 3:
 						newName = dmy[2] + '-' + dmy[1] + '-' + dmy[0]
-						os.rename(self.inputPath + '/' + piece, self.inputPath + '/' + newName)
+						newNamePath = os.path.join(self.inputPath, newName)
+						os.rename(oldNamePath, newNamePath)
 						print(" - new name: " + newName)
 					else:
 						print(" - not changed")
