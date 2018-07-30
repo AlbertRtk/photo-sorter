@@ -9,3 +9,6 @@ Projects consists of two files:
 	
 * myfiles.py
 > The file with class MyFiles which stors the path to input and output directories.
+
+* functions.py
+> File with static functions.
